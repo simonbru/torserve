@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import sys
+
+from stem.control import Controller
+
+
+def main():
+    arg = sys.argv[1]
+    if ':' in arg:
+        parts = arg.split(':')
+        port = int(parts[0])
+        dest_addr = parts[1]
+        dest_port = int(parts[2])
+    else:
+        port = int(arg)
+        dest_port = port
+        dest_addr = '127.0.0.1'
+
+    with Controller.from_port() as con:
+        con.authenticate()
+        print("Publishing hidden service...")
+        response = con.create_ephemeral_hidden_service({
+            port: f'{dest_addr}:{dest_port}',
+        }, await_publication=True)
+        service_id = response.service_id
+        print(f"Onion address: {service_id}.onion")
+        print(f"Onion URL: http://{service_id}.onion")
+        print(f"Tor2web URL: https://{service_id}.onion.link")
+        input()
+
+
+if __name__ == '__main__':
+    main()
